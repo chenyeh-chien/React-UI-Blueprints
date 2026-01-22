@@ -20,10 +20,6 @@
   },
   "homepage": "https://github.com/chenyeh-chien/React-UI-Blueprints#readme",
   "description": "",
-  "workspaces": [
-    ".",
-    "src/vendors/styles"
-  ],
   "devDependencies": {
     "@chromatic-com/storybook": "^5.0.0",
     "@storybook/addon-a11y": "^10.1.11",
