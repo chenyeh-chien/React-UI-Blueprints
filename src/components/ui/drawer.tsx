@@ -19,14 +19,27 @@ function useKeyboardHeight() {
         0,
         window.innerHeight - viewport.height - viewport.offsetTop
       );
-      setKeyboardHeight(kbH);
+
+      // On iOS, sometimes a small difference is still reported when keyboard is closed.
+      // If the difference is very small (e.g. < 50), consider it 0
+      setKeyboardHeight(kbH < 50 ? 0 : kbH);
+    }
+
+    function handleFocusOut(e: FocusEvent) {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        // slight delay to allow viewport to update
+        setTimeout(handleResize, 100);
+      }
     }
 
     viewport.addEventListener("resize", handleResize);
     viewport.addEventListener("scroll", handleResize);
+    window.addEventListener("focusout", handleFocusOut);
+
     return () => {
       viewport.removeEventListener("resize", handleResize);
       viewport.removeEventListener("scroll", handleResize);
+      window.removeEventListener("focusout", handleFocusOut);
     };
   }, []);
 
@@ -39,6 +52,7 @@ const Drawer = ({
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
   <DrawerPrimitive.Root
     shouldScaleBackground={shouldScaleBackground}
+    repositionInputs={false}
     {...props}
   />
 )
@@ -74,17 +88,18 @@ const DrawerContent = React.forwardRef<
       <DrawerPrimitive.Content
         ref={ref}
         className={cn(
-          "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background",
+          "fixed inset-x-0 bottom-0 z-50 mt-24 flex flex-col rounded-t-[10px] border bg-background",
           className
         )}
         style={{
+          maxHeight: keyboardHeight > 0 ? `calc(100svh - ${keyboardHeight}px - 2rem)` : '90svh',
           bottom: keyboardHeight > 0 ? `${keyboardHeight}px` : undefined,
-          transition: "bottom 0.2s ease",
+          transition: "bottom 0.2s ease, max-height 0.2s ease",
           ...style,
         }}
         {...props}
       >
-        <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />
+        <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted shrink-0" />
         {children}
       </DrawerPrimitive.Content>
     </DrawerPortal>
