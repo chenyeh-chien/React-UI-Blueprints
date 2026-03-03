@@ -19,27 +19,14 @@ function useKeyboardHeight() {
         0,
         window.innerHeight - viewport.height - viewport.offsetTop
       );
-
-      // On iOS, sometimes a small difference is still reported when keyboard is closed.
-      // If the difference is very small (e.g. < 50), consider it 0
-      setKeyboardHeight(kbH < 50 ? 0 : kbH);
-    }
-
-    function handleFocusOut(e: FocusEvent) {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        // slight delay to allow viewport to update
-        setTimeout(handleResize, 100);
-      }
+      setKeyboardHeight(kbH);
     }
 
     viewport.addEventListener("resize", handleResize);
     viewport.addEventListener("scroll", handleResize);
-    window.addEventListener("focusout", handleFocusOut);
-
     return () => {
       viewport.removeEventListener("resize", handleResize);
       viewport.removeEventListener("scroll", handleResize);
-      window.removeEventListener("focusout", handleFocusOut);
     };
   }, []);
 
